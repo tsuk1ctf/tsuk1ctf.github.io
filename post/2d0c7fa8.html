@@ -44,7 +44,7 @@
 <meta property="og:image" content="https://tsuk1ctf.github.io/post/2d0c7fa8/1740151723217-939d0ce1-6439-4291-ad7c-a28346a68d44.png">
 <meta property="og:image" content="https://tsuk1ctf.github.io/post/2d0c7fa8/1740152248589-956f4a3f-0c9a-4534-9900-b243525f30e4.png">
 <meta property="article:published_time" content="2025-02-21T14:23:31.000Z">
-<meta property="article:modified_time" content="2025-02-21T15:53:36.934Z">
+<meta property="article:modified_time" content="2025-02-21T16:06:49.399Z">
 <meta property="article:author" content="Tsuk1">
 <meta property="article:tag" content="Tsuk1">
 <meta name="twitter:card" content="summary_large_image">
@@ -351,23 +351,20 @@
 
 <p>参数详解</p>
 <ol>
-<li><code>**void \*addr**</code>:</li>
-</ol>
+<li><p><code>void *addr</code>:</p>
 <ul>
 <li>指定映射区域的起始地址。通常设置为 <code>NULL</code>，表示由系统自动选择合适的地址。</li>
 </ul>
-<ol>
-<li><code>**size_t length**</code>:</li>
-</ol>
+</li>
+<li><p><code>size_t length</code>:</p>
 <ul>
 <li>映射区域的长度，以字节为单位。通常设置为文件的大小。</li>
 </ul>
-<ol>
-<li><code>**int prot**</code>:</li>
-</ol>
+</li>
+<li><p><code>int prot</code>:</p>
 <ul>
 <li><p>指定映射区域的保护模式，可以是以下值的组合：</p>
-</li>
+<ul>
 <li><p><code>PROT_READ</code>: 映射区域可读。</p>
 </li>
 <li><p><code>PROT_WRITE</code>: 映射区域可写。</p>
@@ -377,12 +374,13 @@
 <li><p><code>PROT_NONE</code>: 映射区域不可访问。</p>
 </li>
 </ul>
-<ol>
-<li><code>**int flags**</code>:</li>
-</ol>
+</li>
+</ul>
+</li>
+<li><p><code>int flags</code>:</p>
 <ul>
 <li><p>控制映射区域的特性，可以是以下值的组合：</p>
-</li>
+<ul>
 <li><p><code>MAP_SHARED</code>: 映射区域与其他进程共享，对映射区域的修改会写回文件。</p>
 </li>
 <li><p><code>MAP_PRIVATE</code>: 映射区域是私有的，对映射区域的修改不会写回文件。</p>
@@ -392,18 +390,20 @@
 <li><p><code>MAP_FIXED</code>: 强制使用指定的 <code>addr</code> 作为映射区域的起始地址。</p>
 </li>
 </ul>
-<ol>
-<li><code>**int fd**</code>:</li>
-</ol>
+</li>
+</ul>
+</li>
+<li><p><code>int fd</code>:</p>
 <ul>
 <li>文件描述符，表示要映射的文件。如果是匿名映射（<code>MAP_ANONYMOUS</code>），则设置为 <code>-1</code>。</li>
 </ul>
-<ol>
-<li><code>**off_t offset**</code>:</li>
-</ol>
+</li>
+<li><p><code>off_t offset</code>:</p>
 <ul>
 <li>文件中的偏移量，表示从文件的哪个位置开始映射。通常设置为 <code>0</code>，表示从文件开头开始映射。</li>
 </ul>
+</li>
+</ol>
 <p>返回值</p>
 <ul>
 <li>成功时，返回映射区域的起始地址。</li>
